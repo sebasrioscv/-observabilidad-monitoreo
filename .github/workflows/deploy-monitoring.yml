@@ -1,0 +1,27 @@
+name: Deploy Monitoring to EC2
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - 'monitoring/**'
+      - 'docker-compose.yaml'
+      - '.github/workflows/deploy-monitoring.yml'
+  workflow_dispatch:
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Desplegar monitoreo por SSH
+        uses: appleboy/ssh-action@v1.2.0
+        with:
+          host: ${{ secrets.EC2_HOST }}
+          username: ${{ secrets.EC2_USER }}
+          key: ${{ secrets.EC2_SSH_KEY }}
+          script: |
+            cd ${{ secrets.APP_DIR }}
+            git pull origin main
+            docker compose up -d prometheus grafana
+            docker compose ps prometheus grafana
